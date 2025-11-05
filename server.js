@@ -4,7 +4,7 @@
 import express from "express"; // Requisição do pacote do express
 import pkg from "pg"; // Requisição do pacote do pg (PostgreSQL)
 import dotenv from "dotenv"; // Importa o pacote dotenv para carregar variáveis de ambiente
-import cors from "cors";
+import cors from "cors"; // Importa o pacote cors para habilitar o CORS
 
 // ######
 // Local onde as configurações do servidor serão feitas
@@ -14,9 +14,11 @@ const port = 3000; // Define a porta onde o servidor irá escutar
 dotenv.config(); // Carrega as variáveis de ambiente do arquivo .env
 const { Pool } = pkg; // Obtém o construtor Pool do pacote pg para gerenciar conexões com o banco de dados PostgreSQL
 let pool = null; // Variável para armazenar o pool de conexões com o banco de dados
-app.use(cors());
 
+
+app.use(cors()); // Habilita o CORS para todas as rotas
 app.use(express.json()); // Middleware para interpretar requisições com corpo em JSON
+
 // ######
 // Local onde funções serão definidas
 // ######
@@ -34,20 +36,132 @@ function conectarBD() {
 // Local onde as rotas (endpoints) serão definidas
 // ######
 
+app.get("/usuarios/:id", async (req, res) => {
+  console.log("Rota GET /usuarios/:id solicitada");
 
-app.get("/questoes", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const db = conectarBD();
+    const consulta = "SELECT * FROM usuarios WHERE id = $1";
+    const resultado = await db.query(consulta, [id]);
+    const dados = resultado.rows;
 
+    if (dados.length === 0) {
+      return res.status(404).json({ mensagem: "Usuário não encontrado" });
+    }
+
+    res.json(dados);
+  } catch (e) {
+    console.error("Erro ao buscar usuário:", e);
+    res.status(500).json({
+      erro: "Erro interno do servidor"
+    });
+  }
+});
+
+app.get("/usuarios", async (req, res) => {
   const db = conectarBD();
 
   try {
-    const resultado = await db.query("SELECT * FROM questoes"); // Executa uma consulta SQL para selecionar todas as questões
-    const dados = resultado.rows; // Obtém as linhas retornadas pela consulta
-    res.json(dados); // Retorna o resultado da consulta como JSON
+    const resultado = await db.query("SELECT * FROM usuarios");
+    const dados = resultado.rows;
+    res.json(dados);
   } catch (e) {
-    console.error("Erro ao buscar questões:", e); // Log do erro no servidor
+    console.error("Erro ao buscar usuários:", e);
+    res.status(500).json({
+      erro: "Erro interno do servidor"
+    });
+  }
+});
+
+app.delete("/usuarios/:id", async (req, res) => {
+  console.log("Rota DELETE /usuarios/:id solicitada");
+
+  try {
+    const id = req.params.id;
+    const db = conectarBD();
+    let consulta = "SELECT * FROM usuarios WHERE id = $1";
+    let resultado = await db.query(consulta, [id]);
+    let dados = resultado.rows;
+
+    if (dados.length === 0) {
+      return res.status(404).json({ mensagem: "Usuário não encontrado" });
+    }
+
+    consulta = "DELETE FROM usuarios WHERE id = $1";
+    resultado = await db.query(consulta, [id]);
+    res.status(200).json({ mensagem: "Usuário excluído com sucesso!!" });
+  } catch (e) {
+    console.error("Erro ao excluir usuário:", e);
+    res.status(500).json({
+      erro: "Erro interno do servidor"
+    });
+  }
+});
+
+app.post("/usuarios", async (req, res) => {
+  console.log("Rota POST /usuarios solicitada");
+
+  try {
+    const data = req.body;
+
+    if (!data.nome || !data.email || !data.senha) {
+      return res.status(400).json({
+        erro: "Dados inválidos",
+        mensagem: "Todos os campos (nome, email, senha) são obrigatórios.",
+      });
+    }
+
+    const db = conectarBD();
+
+    const consulta =
+      "INSERT INTO usuarios (nome,email,senha,imagem) VALUES ($1,$2,$3,$4)";
+    const usuario = [data.nome, data.email, data.senha, data.imagem];
+    const resultado = await db.query(consulta, usuario);
+    res.status(201).json({ mensagem: "Usuário criado com sucesso!" });
+  } catch (e) {
+    console.error("Erro ao inserir usuário:", e);
+    res.status(500).json({
+      erro: "Erro interno do servidor"
+    });
+  }
+});
+
+app.put("/usuarios/:id", async (req, res) => {
+  console.log("Rota PUT /usuarios solicitada");
+
+  try {
+    const id = req.params.id;
+    const db = conectarBD();
+    let consulta = "SELECT * FROM usuarios WHERE id = $1";
+    let resultado = await db.query(consulta, [id]);
+    let usuario = resultado.rows;
+
+    if (usuario.length === 0) {
+      return res.status(404).json({ message: "Usuário não encontrado" });
+    }
+
+    const data = req.body;
+
+    data.nome = data.nome || usuario[0].nome;
+    data.email = data.email || usuario[0].email;
+    data.senha = data.senha || usuario[0].senha;
+    data.imagem = data.imagem || usuario[0].imagem;
+
+    consulta = "UPDATE usuarios SET nome = $1, email = $2, senha = $3, imagem = $4 WHERE id = $5";
+    resultado = await db.query(consulta, [
+      data.nome,
+      data.email,
+      data.senha,
+      data.imagem,
+      id,
+    ]);
+
+    res.status(200).json({ message: "Usuário atualizado com sucesso!" });
+  } catch (e) {
+    console.error("Erro ao atualizar usuário:", e);
     res.status(500).json({
       erro: "Erro interno do servidor",
-      mensagem: "Não foi possível buscar as questões",
     });
   }
 });
@@ -71,6 +185,22 @@ app.get("/questoes/:id", async (req, res) => {
     res.json(dados); // Retorna o resultado da consulta como JSON
   } catch (e) {
     console.error("Erro ao buscar questão:", e); // Log do erro no servidor
+    res.status(500).json({
+      erro: "Erro interno do servidor"
+    });
+  }
+});
+
+app.get("/questoes", async (req, res) => {
+
+  const db = conectarBD();
+
+  try {
+    const resultado = await db.query("SELECT * FROM questoes"); // Executa uma consulta SQL para selecionar todas as questões
+    const dados = resultado.rows; // Obtém as linhas retornadas pela consulta
+    res.json(dados); // Retorna o resultado da consulta como JSON
+  } catch (e) {
+    console.error("Erro ao buscar questões:", e); // Log do erro no servidor
     res.status(500).json({
       erro: "Erro interno do servidor"
     });
@@ -104,7 +234,7 @@ app.delete("/questoes/:id", async (req, res) => {
   }
 });
 
-//server.js
+
 app.post("/questoes", async (req, res) => {
   console.log("Rota POST /questoes solicitada"); // Log no terminal para indicar que a rota foi acessada
 
@@ -135,7 +265,6 @@ app.post("/questoes", async (req, res) => {
   }
 });
 
-//server.js
 app.put("/questoes/:id", async (req, res) => {
   console.log("Rota PUT /questoes solicitada"); // Log no terminal para indicar que a rota foi acessada
 
@@ -205,13 +334,11 @@ app.get("/", async (req, res) => {
 
   // Responde com um JSON contendo uma mensagem, o nome do autor e o status da conexão com o banco de dados
   res.json({
-    message: "API para Questões de Prova", // Substitua pelo conteúdo da sua API
+    mensagem: "API para Questões", // Substitua pelo conteúdo da sua API
     autor: "Arthur Porto", // Substitua pelo seu nome
     dbStatus: dbStatus,
   });
 });
-
-
 
 // ######
 // Local onde o servidor irá escutar as requisições
