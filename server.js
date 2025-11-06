@@ -54,7 +54,7 @@ app.get("/usuarios/:id", async (req, res) => {
   } catch (e) {
     console.error("Erro ao buscar usuário:", e);
     res.status(500).json({
-      erro: "Erro interno do servidor"
+      erro: `Erro interno do servidor: ${e.message}`
     });
   }
 });
@@ -69,7 +69,7 @@ app.get("/usuarios", async (req, res) => {
   } catch (e) {
     console.error("Erro ao buscar usuários:", e);
     res.status(500).json({
-      erro: "Erro interno do servidor"
+      erro: `Erro interno do servidor: ${e.message}`
     });
   }
 });
@@ -94,7 +94,7 @@ app.delete("/usuarios/:id", async (req, res) => {
   } catch (e) {
     console.error("Erro ao excluir usuário:", e);
     res.status(500).json({
-      erro: "Erro interno do servidor"
+      erro: `Erro interno do servidor: ${e.message}`
     });
   }
 });
@@ -122,7 +122,7 @@ app.post("/usuarios", async (req, res) => {
   } catch (e) {
     console.error("Erro ao inserir usuário:", e);
     res.status(500).json({
-      erro: "Erro interno do servidor"
+      erro: `Erro interno do servidor: ${e.message}`
     });
   }
 });
@@ -161,7 +161,7 @@ app.put("/usuarios/:id", async (req, res) => {
   } catch (e) {
     console.error("Erro ao atualizar usuário:", e);
     res.status(500).json({
-      erro: "Erro interno do servidor",
+      erro: `Erro interno do servidor: ${e.message}`,
     });
   }
 });
@@ -186,7 +186,7 @@ app.get("/questoes/:id", async (req, res) => {
   } catch (e) {
     console.error("Erro ao buscar questão:", e); // Log do erro no servidor
     res.status(500).json({
-      erro: "Erro interno do servidor"
+      erro: `Erro interno do servidor: ${e.message}`
     });
   }
 });
@@ -202,7 +202,7 @@ app.get("/questoes", async (req, res) => {
   } catch (e) {
     console.error("Erro ao buscar questões:", e); // Log do erro no servidor
     res.status(500).json({
-      erro: "Erro interno do servidor"
+      erro: `Erro interno do servidor: ${e.message}`
     });
   }
 });
@@ -229,7 +229,7 @@ app.delete("/questoes/:id", async (req, res) => {
   } catch (e) {
     console.error("Erro ao excluir questão:", e); // Log do erro no servidor
     res.status(500).json({
-      erro: "Erro interno do servidor"
+      erro: `Erro interno do servidor: ${e.message}`
     });
   }
 });
@@ -260,7 +260,7 @@ app.post("/questoes", async (req, res) => {
   } catch (e) {
     console.error("Erro ao inserir questão:", e); // Log do erro no servidor
     res.status(500).json({
-      erro: "Erro interno do servidor"
+      erro: `Erro interno do servidor: ${e.message}`
     });
   }
 });
@@ -305,7 +305,7 @@ app.put("/questoes/:id", async (req, res) => {
   } catch (e) {
     console.error("Erro ao atualizar questão:", e); // Log do erro no servidor
     res.status(500).json({
-      erro: "Erro interno do servidor",
+      erro: `Erro interno do servidor: ${e.message}`,
     });
   }
 });
